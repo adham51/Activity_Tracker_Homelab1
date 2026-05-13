@@ -1,0 +1,63 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: productivity_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       ${DB_NAME}  # the database name Python connects to
+      POSTGRES_USER:     ${DB_USER}                  # the username Python connects with
+      POSTGRES_PASSWORD: ${DB_PASSWORD}                  # the password Python connects with
+    volumes:
+      - pg_data:/var/lib/postgresql/data       # persists your data even if container is destroyed
+    ports:
+      - "5432:5432"                            # exposes Postgres to your host machine so DBeaver and your Python script can reach it
+    healthcheck:
+      # FIXED: was checking for user 'tracker' and db 'productivity' — neither exist
+      # must match POSTGRES_USER and POSTGRES_DB exactly or Grafana's depends_on never passes
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s   # check every 5 seconds
+      timeout: 5s    # give up if no response within 5 seconds
+      retries: 5     # after 5 failures in a row, mark container as unhealthy
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: productivity_grafana
+    restart: unless-stopped
+    environment:
+      # ── Login credentials ────────────────────────────────────────────────
+      GF_SECURITY_ADMIN_USER:     ${GRAFANA_ADMIN_USER}   # username to log into Grafana UI
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}   # password to log into Grafana UI
+
+      # DB login:
+      GF_DATABASE_HOST: postgres
+      GF_DATABASE_NAME: ${DB_NAME}
+      GF_DATABASE_USER: ${DB_USER}
+      GF_DATABASE_PASSWORD: ${DB_PASSWORD}
+
+      # ── Plugins ──────────────────────────────────────────────────────────
+      # grafana-clock-panel  → shows a live clock widget on your dashboard
+      # grafana-piechart-panel → needed for pie charts (not built-in on older Grafana)
+      # Note: on Grafana 8+ pie charts are built-in, but installing the plugin anyway doesn't hurt
+      GF_FEATURE_TOGGLES_ENABLE: ""
+
+    volumes:
+      # Grafana's own internal database (stores your dashboards, users, settings)
+      # Without this volume, every time the container restarts you lose all your dashboards
+      - grafana_data:/var/lib/grafana
+
+      # This folder is how you "pre-configure" Grafana without clicking through the UI
+      # Grafana reads YAML files from here on startup and auto-creates data sources + dashboards
+      # We'll create this folder structure on your machine in a moment
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3000:3000"   # access Grafana at http://localhost:3000 in your browser
+
+    depends_on:
+      postgres:
+        condition: service_healthy  # won't start until Postgres passes its healthcheck above
+                                    # this prevents Grafana from booting before the DB is ready
+
+volumes:
+  pg_data:       # named volume — Docker manages where this lives on disk
+  grafana_data:  # named volume — stores Grafana's internal state

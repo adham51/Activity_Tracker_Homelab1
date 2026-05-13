@@ -1,0 +1,22 @@
+apiVersion: 1
+
+datasources:
+  - name: ProductivityDB          # the display name inside Grafana — you'll see this when writing queries
+    type: postgres                # tells Grafana this is a PostgreSQL database
+    access: proxy                 # 'proxy' m eans Grafana server connects to DB (not your browser directly)
+    
+    url: postgres                 # 'postgres' is the Docker service name — Docker's internal DNS resolves this
+    
+    user: ${GF_DATABASE_USER}      # must match POSTGRES_USER in docker-compose
+    
+    secureJsonData:
+      password: ${GF_DATABASE_PASSWORD}  # must match POSTGRES_PASSWORD in docker-compose
+    
+    jsonData:
+      database: ${GF_DATABASE_NAME}  # must match POSTGRES_DB in docker-compose
+      sslmode: disable            # no SSL needed for local Docker networking
+      postgresVersion: 1600       # tells Grafana you're running Postgres 16 (enables version-specific features)
+      timescaledb: false          # you're not using TimescaleDB extension, so false
+    
+    isDefault: true               # makes this the default data source so every new panel uses it automatically
+    editable: true                # allows editing this data source through the UI if needed
