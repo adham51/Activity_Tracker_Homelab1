@@ -17,7 +17,7 @@ services:
       # must match POSTGRES_USER and POSTGRES_DB exactly or Grafana's depends_on never passes
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s   # check every 5 seconds
-      timeout: 5s    # give up if no response within 5 seconds
+      timeout: 10s    # give up if no response within 5 seconds
       retries: 5     # after 5 failures in a row, mark container as unhealthy
 
   grafana:
