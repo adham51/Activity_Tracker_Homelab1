@@ -17,14 +17,13 @@ services:
       # must match POSTGRES_USER and POSTGRES_DB exactly or Grafana's depends_on never passes
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s   # check every 5 seconds
-      timeout: 7s    # give up if no response within 5 seconds
+      timeout: 5s    # give up if no response within 5 seconds
       retries: 5     # after 5 failures in a row, mark container as unhealthy
 
   grafana:
     image: grafana/grafana:13.0.1
     container_name: productivity_grafana
     restart: unless-stopped
-    user: root  # <--- THIS IS THE KEY: It allows Grafana to read the provisioned files
     environment:
       # ── Login credentials ────────────────────────────────────────────────
       GF_SECURITY_ADMIN_USER:     ${GRAFANA_ADMIN_USER}   # username to log into Grafana UI
