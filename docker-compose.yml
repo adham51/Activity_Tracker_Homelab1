@@ -24,6 +24,7 @@ services:
     image: grafana/grafana:13.0.1
     container_name: productivity_grafana
     restart: unless-stopped
+    user: root  # <--- THIS IS THE KEY: It allows Grafana to read the provisioned files
     environment:
       # ── Login credentials ────────────────────────────────────────────────
       GF_SECURITY_ADMIN_USER:     ${GRAFANA_ADMIN_USER}   # username to log into Grafana UI
