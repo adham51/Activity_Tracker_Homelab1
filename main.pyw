@@ -120,19 +120,9 @@ KNOWN_SITES = {
     # Catches educational YouTube before the generic YouTube entry below
     "YouTube (Learning)": [
         # Arabic
-        "شرح", "كورس", "محاضرة",
-        # Certs & Cloud
-        "aws", "azure", "gcp", "devops", "docker", "kubernetes", "k8s",
-        "terraform", "ansible", "linux", "networking", "cisco",
-        "comptia", "cert", "certification", "exam", "associate",
-        # Dev
-        "python", "postgres", "sql", "grafana", "prometheus",
-        "next.js", "react", "javascript", "typescript", "c++", "oop",
-        "data structures", "algorithms", "leetcode",
+        "شرح", "كورس", "محاضرة",  "cert", "certification", "exam", "associate",
         # General learning signals
-        "tutorial", "course", "crash course", "homelab", "barq",
-        "programming", "coding", "development", "tech", "technology",
-        "information technology", "cybersecurity", "interview", "roadmap",
+        "tutorial", "course", "crash course", "roadmap",
         "explained", "how to", "beginner", "advanced", "full course",
     ],
 
