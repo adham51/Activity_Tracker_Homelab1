@@ -21,7 +21,7 @@ services:
       retries: 5     # after 5 failures in a row, mark container as unhealthy
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:13.0.1
     container_name: productivity_grafana
     restart: unless-stopped
     environment:
