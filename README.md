@@ -137,21 +137,21 @@ LOG_LEVEL=INFO
 
 ## Challenges & Troubleshooting
 
-### Network resilience — laptop sleep / Wi-Fi switching
+### 1. Network resilience — laptop sleep / Wi-Fi switching
 The tracker runs on a laptop that sleeps and changes networks. This silently killed the persistent PostgreSQL connection and crashed the script.
 
 **Solution:** Added a `SELECT 1` ping before every poll. If it fails, an auto-reconnect loop catches the exception and re-establishes the connection without crashing.
 
 ---
 
-### Ghost scripts — multiple silent instances corrupting the DB
+### 2. Ghost scripts — multiple silent instances corrupting the DB
 During testing, multiple invisible Python instances spawned simultaneously. They raced to update the same rows, producing corrupted `ended_at` timestamps and duplicate entries.
 
 **Solution:** Lock file at startup. The script writes its PID to `tracker.lock` and checks on startup whether that PID is still alive using `psutil.pid_exists()`. If alive, it exits. If stale (from a crash), it overwrites. `os.kill(pid, 0)` was not used because it does not work correctly on Windows.
 
 ---
 
-### Chrome Tracking & Title Parsing with Tampermonkey
+### 3. Chrome Tracking & Title Parsing with Tampermonkey
 Problem: Initial strategy relied on reading title from chrome tab. Some websites didn't include the domain name in the tab title (like chatgpt & AWS), and using Chrome DevTools (CDP) for tracking is invasive, and relying on OS window titles is messy. 
 
 **Solution:** Tampermonkey, a browser extension that lets you run custom JavaScript on the fly, to permanently inject the hostname into the tab title so the tracker can catch it.
@@ -178,21 +178,26 @@ Problem: Initial strategy relied on reading title from chrome tab. Some websites
 
 ---
 
-### Heuristic title parsing — sites with non-standard separators
-GitHub uses `·` as a separator. LinkedIn uses `|`. Some pages (AWS Console, ChatGPT) dynamically rewrite their `<title>` tag to reflect context, dropping the site name entirely. This produced fragmented, unrecognizable entries in the database.
+### 4. Docker bind mount path resolution in Portainer
+Grafana dashboards were not loading after deploying via Portainer. `ls -R /etc/grafana/provisioning` inside the container showed the expected directory structure was missing entirely.
 
-**Solution:** A `KNOWN_SITES` dictionary maps known title substrings to clean site names, checked before the generic separator split. A tiered ordering ensures educational YouTube videos are caught before the generic YouTube entry. A Tampermonkey userscript injects the hostname as a permanent title prefix for dynamic SPAs like the AWS Console.
+**Root cause:** The relative path `./grafana/provisioning` in `docker-compose.yml` is resolved relative to wherever `docker compose` is invoked. Portainer executes stacks from its own internal working directory (`/data/compose/1`), not the repo root, so Docker mounted an empty directory.
+
+**Solution:** Replace the relative path with an absolute path:
+```yaml
+- /home/ubuntu/homelab/Activity_Tracker_Homelab1/grafana/provisioning:/etc/grafana/provisioning
+```
 
 ---
 
-### Windows Service isolation — Session 0
+### 5. Windows Service isolation — Session 0
 NSSM was used initially to register the tracker as a Windows Service. The service started and immediately stopped with no error output. The root cause is Windows Session 0 isolation: all services run in a headless environment with no desktop access, and `pygetwindow` uses Win32 APIs that require an active GUI session.
 
 **Solution:** Migrated to Task Scheduler with "Run only when user is logged on." This runs the script in the active user session (Session 1+) where `pygetwindow` can see the desktop normally.
 
 ---
 
-### Grafana auto-provisioning broken in 13.0.x
+### 6. Grafana auto-provisioning broken in 13.0.x
 After upgrading to Grafana 12.2.0+, the PostgreSQL datasource stopped connecting automatically on container startup. The error was `"You do not currently have a default database configured"` despite the YAML appearing correct. Clicking Save & Test manually in the UI worked fine.
 
 **Root cause:** A breaking schema change in Grafana 12.2.0 silently dropped the `database` field at the root level of the provisioning YAML.
@@ -205,19 +210,7 @@ jsonData:
 
 ---
 
-### Docker bind mount path resolution in Portainer
-Grafana dashboards were not loading after deploying via Portainer. `ls -R /etc/grafana/provisioning` inside the container showed the expected directory structure was missing entirely.
-
-**Root cause:** The relative path `./grafana/provisioning` in `docker-compose.yml` is resolved relative to wherever `docker compose` is invoked. Portainer executes stacks from its own internal working directory (`/data/compose/1`), not the repo root, so Docker mounted an empty directory.
-
-**Solution:** Replace the relative path with an absolute path:
-```yaml
-- /home/ubuntu/homelab/Activity_Tracker_Homelab1/grafana/provisioning:/etc/grafana/provisioning
-```
-
----
-
-### Provisioned dashboards are read-only in Grafana
+### 7. Provisioned dashboards are read-only in Grafana
 After enabling GitOps provisioning, the Grafana UI blocked saving any dashboard changes with a message saying the dashboard is managed by an external source.
 
 This is expected behavior. In provisioning mode, the JSON file in the repo is the source of truth. All edits must be made to the JSON file, committed, and pushed — Portainer picks up the change and Grafana reloads automatically.
