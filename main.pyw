@@ -1,10 +1,3 @@
-"""
-Productivity Tracker
-====================
-This script runs in the background and watches which app you're using.
-Every time you switch windows, it saves a record to the database.
-"""
-
 # ── Imports ──────────────────────────────────────────────────────────────────
 import time          # Allows us to pause the script using time.sleep()
 import logging       # Upgraded version of print() that adds timestamps to messages
@@ -42,8 +35,6 @@ POLL_INTERVAL = float(os.getenv("POLL_INTERVAL", "2"))
 # Controls how chatty the script is. "INFO" prints standard messages.
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
-# The secret URL where Chrome broadcasts what tabs are open (if started in debug mode)
-CDP_URL = "http://localhost:9222/json"
 
 # A translation dictionary. If the window title contains any of the words in the list,
 # the script will rename it to the clean key on the left.
