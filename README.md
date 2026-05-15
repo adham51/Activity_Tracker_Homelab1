@@ -4,7 +4,7 @@ This projects is one of the closest to my heart. After creating and testing it f
 
 My problem was spending too much time on my laptop supposedly "studying" only to finish the day realizing I barely got anything done. I wanted to know exactly where my time was going, so I built a way to track it myself.
 
-A Python background service that silently tracks active window and Chrome tab usage on a Windows laptop, stores sessions in PostgreSQL, and visualizes productivity patterns in Grafana — all running on AWS EC2 via Docker Compose with a GitOps deployment pipeline.
+A Python background service that silently tracks active window and Chrome tab usage on a Windows laptop, stores sessions in PostgreSQL, and visualizes productivity patterns in Grafana, all running on AWS EC2 via Docker Compose with a GitOps deployment pipeline.
 
 ---
 
