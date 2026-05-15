@@ -24,7 +24,7 @@ AWS EC2 (t3.small, Ubuntu 24.04, eu-central-1)
 ├── Docker: grafana:13.0.1      — dashboards provisioned via Git
 └── Portainer                   — GitOps: git push → auto-redeploy
 ```
-![Project Architecture](architecture.svg)
+![Project Architecture](architecture.png)
 ---
 
 ## Stack
