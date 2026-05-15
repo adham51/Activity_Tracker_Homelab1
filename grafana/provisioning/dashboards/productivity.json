@@ -146,7 +146,7 @@
                       "editorMode": "code",
                       "format": "table",
                       "rawQuery": true,
-                      "rawSql": "SELECT app_name, SUM(total_secs) AS duration\r\nFROM daily_stats\r\nWHERE $__timeFilter(stat_date)\r\nAND app_name NOT LIKE 'Chrome: %'\r\nAND app_name NOT IN ('Windows Default Lock Screen','Search','Start','Task Switching','UnlockingWindow' ,'Task Manager', 'Volume Control', 'Avast Free Antivirus', 'Action center', 'Reload site?', 'Network Connections' )\r\nGROUP BY app_name\r\nORDER BY duration DESC\r\nLIMIT 7;",
+                      "rawSql": "SELECT app_name, SUM(total_secs) AS duration\r\nFROM daily_stats\r\nWHERE $__timeFilter(stat_date)\r\nAND app_name NOT LIKE 'Chrome: %'\r\nAND app_name NOT IN (\r\n  'Windows Default Lock Screen','Search','Start',\r\n  'Task Switching','UnlockingWindow','Task Manager', \r\n  'Volume Control','Avast Free Antivirus','Action center', \r\n  'Reload site?', 'Network Connections', 'Could Not Start the Application'\r\n)\r\nGROUP BY app_name\r\nORDER BY duration DESC\r\nLIMIT 7;",
                       "sql": {
                         "columns": [
                           {
@@ -256,7 +256,7 @@
                       "editorMode": "code",
                       "format": "table",
                       "rawQuery": true,
-                      "rawSql": "SELECT\r\n  CASE\r\n    WHEN app_name ILIKE '%youtube%' THEN 'YouTube'\r\n    ELSE REPLACE(app_name, 'Chrome: ', '')\r\n  END AS site,\r\n  SUM(total_secs) AS duration\r\nFROM daily_stats\r\nWHERE stat_date = CURRENT_DATE\r\nAND app_name LIKE 'Chrome: %'\r\nGROUP BY 1\r\nORDER BY duration DESC\r\nLIMIT 7;",
+                      "rawSql": "SELECT\r\n  CASE\r\n    WHEN app_name ILIKE '%youtube%' THEN 'YouTube'\r\n    ELSE REPLACE(app_name, 'Chrome: ', '')\r\n  END AS site,\r\n  SUM(total_secs) AS duration\r\nFROM daily_stats\r\nWHERE $__timeFilter(stat_date)\r\nAND app_name LIKE 'Chrome: %'\r\nGROUP BY 1\r\nORDER BY duration DESC\r\nLIMIT 7;",
                       "sql": {
                         "columns": [
                           {
@@ -366,7 +366,7 @@
                       "editorMode": "code",
                       "format": "time_series",
                       "rawQuery": true,
-                      "rawSql": "SELECT\r\n  gs::date::timestamptz AS \"time\",\r\n  COALESCE(ROUND(SUM(d.total_secs) / 3600.0, 2), 0) AS \"Hours\"\r\nFROM generate_series(\r\n  date_trunc('day', NOW()),\r\n  date_trunc('day', NOW()) + INTERVAL '6 days',\r\n  '1 day'\r\n) AS gs\r\nLEFT JOIN daily_stats d\r\n  ON d.stat_date = gs::date\r\n  AND d.app_name NOT LIKE 'Chrome: %'\r\nGROUP BY gs\r\nORDER BY gs ASC",
+                      "rawSql": "SELECT\r\n  gs::date::timestamptz AS \"time\",\r\n  COALESCE(ROUND(SUM(d.total_secs) / 3600.0, 2), 0) AS \"Hours\"\r\nFROM generate_series(\r\n  date_trunc('day', NOW()) - INTERVAL '6 days',\r\n  date_trunc('day', NOW()),\r\n  '1 day'\r\n) AS gs\r\nLEFT JOIN daily_stats d\r\n  ON d.stat_date = gs::date\r\n  AND d.app_name NOT LIKE 'Chrome: %'\r\nGROUP BY gs\r\nORDER BY gs ASC;",
                       "sql": {
                         "columns": [
                           {
@@ -685,25 +685,6 @@
     "timezone": "browser",
     "to": "now"
   },
-  "title": "My Laptop Tracker",
-  "variables": [
-    {
-      "kind": "CustomVariable",
-      "spec": {
-        "allowCustomValue": true,
-        "current": {
-          "text": "Sync with Global",
-          "value": "Sync with Global"
-        },
-        "hide": "dontHide",
-        "includeAll": false,
-        "multi": false,
-        "name": "custom0",
-        "options": [],
-        "query": "Sync with Global, Today, Yesterday, Last 7 Days, This Month, Last 2 Months, Last 3 Months",
-        "skipUrlSync": false,
-        "valuesFormat": "csv"
-      }
-    }
-  ]
+  "title": "My Laptop Application Tracker",
+  "variables": []
 }

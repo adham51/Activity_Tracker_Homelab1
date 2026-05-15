@@ -47,6 +47,10 @@ AWS EC2 (t3.small, Ubuntu 24.04, eu-central-1)
 - **Categories Breakdown** — time bucketed into Deep Work, Learning, Career, Communication, Entertainment (donut chart)
 - **Daily Screen Time** — hours per day over a 7-day window (bar chart)
 
+### Grafana Dashboard Images
+![Grafana Dashboard Top View](1.png)
+
+![Grafana Dashboard Bottom View](2.png)
 ---
 
 ## Database Schema
