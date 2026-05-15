@@ -685,7 +685,7 @@
     "timezone": "browser",
     "to": "now"
   },
-  "title": "My Laptop Application Tracker",
+  "title": "My Laptop Tracker",
   "variables": [
     {
       "kind": "CustomVariable",
