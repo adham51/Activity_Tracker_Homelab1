@@ -1,673 +1,521 @@
 {
-  "annotations": [
-    {
-      "kind": "AnnotationQuery",
-      "spec": {
-        "builtIn": true,
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
-        "query": {
-          "datasource": {
-            "name": "-- Grafana --"
-          },
-          "group": "grafana",
-          "kind": "DataQuery",
-          "spec": {},
-          "version": "v0"
-        }
+        "type": "dashboard"
       }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "P84324D8F8AB6224B"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "dtdurations"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 9,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "/^value$/",
+          "values": true
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "dataset": "productivity_tracker",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "P84324D8F8AB6224B"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  FLOOR(SUM(duration_secs) / 3600) || 'h ' ||\r\n  FLOOR((SUM(duration_secs) % 3600) / 60) || 'm' AS value\r\nFROM sessions\r\nWHERE $__timeFilter(started_at)\r\nAND app_name = 'Google Chrome'",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Chrome Hours Today",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "P84324D8F8AB6224B"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "dtdurations"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 15,
+        "x": 9,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "displayMode": "basic",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 14,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "showUnfilled": true,
+        "sizing": "manual",
+        "valueMode": "text"
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "dataset": "productivity_tracker",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "P84324D8F8AB6224B"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT \r\n  app_name, \r\n  SUM(duration_secs) AS duration\r\nFROM sessions\r\nWHERE $__timeFilter(started_at)\r\nAND app_name NOT LIKE 'Chrome: %'\r\nAND app_name NOT IN (\r\n  'Windows Default Lock Screen', 'Search', 'Start', \r\n  'Task Switching', 'UnlockingWindow', 'Task Manager', \r\n  'Volume Control', 'Avast Free Antivirus', 'Action center', \r\n  'Reload site?', 'Network Connections'\r\n)\r\nGROUP BY app_name\r\nORDER BY duration DESC\r\nLIMIT 7;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Time Per App",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "P84324D8F8AB6224B"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "dtdurations"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 7
+      },
+      "id": 3,
+      "options": {
+        "displayMode": "gradient",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "text"
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "dataset": "productivity_tracker",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "P84324D8F8AB6224B"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  CASE\r\n    WHEN app_name ILIKE '%youtube%' THEN 'YouTube'\r\n    ELSE REPLACE(app_name, 'Chrome: ', '')\r\n  END AS site,\r\n  SUM(duration_secs) AS duration\r\nFROM sessions\r\nWHERE $__timeFilter(started_at)\r\nAND app_name LIKE 'Chrome: %'\r\nGROUP BY site\r\nORDER BY duration DESC\r\nLIMIT 7;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Top Websites ",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "P84324D8F8AB6224B"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "decimals": 1,
+          "unit": "dtdurations"
+        }
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 12,
+        "x": 12,
+        "y": 7
+      },
+      "id": 6,
+      "options": {
+        "displayLabels": [],
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^seconds$/",
+          "values": true
+        },
+        "sort": "asc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "dataset": "productivity_tracker",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "P84324D8F8AB6224B"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH categorized_stats AS (\r\n  SELECT\r\n    duration_secs,\r\n    CASE\r\n      -- Deep Work\r\n      WHEN app_name IN ('VS Code', 'Terminal', 'DBeaver', 'Docker', 'PyCharm', 'Cursor')\r\n        OR app_name ILIKE 'Chrome: GitHub%'\r\n        OR app_name ILIKE 'Chrome: AWS%'\r\n        OR app_name ILIKE 'Chrome: Google Cloud%'\r\n        OR app_name ILIKE 'Chrome: Codeforces%'\r\n        OR app_name ILIKE 'Chrome: Stack Overflow%'\r\n        OR app_name ILIKE 'Chrome: Grafana%'\r\n        OR app_name ILIKE 'Chrome: Mermaid%'\r\n        OR app_name ILIKE 'Chrome: Overleaf%'\r\n      THEN 'Deep Work & Coding'\r\n\r\n      -- Learning\r\n      WHEN app_name ILIKE 'Chrome: YouTube (Learning)%'\r\n        OR app_name ILIKE 'Chrome: Udemy%'\r\n        OR app_name ILIKE 'Chrome: Medium%'\r\n        OR app_name ILIKE 'Chrome: NotebookLM%'\r\n        OR app_name ILIKE 'Chrome: Claude%'\r\n        OR app_name ILIKE 'Chrome: ChatGPT%'\r\n        OR app_name ILIKE 'Chrome: Google Gemini%'\r\n        OR app_name ILIKE 'Chrome: Grafana Docs%'\r\n      THEN 'Learning & Research'\r\n\r\n      -- Career\r\n      WHEN app_name ILIKE 'Chrome: LinkedIn%'\r\n        OR app_name ILIKE 'Chrome: Wuzzuf%'\r\n        OR app_name ILIKE 'Chrome: %Jobs%'\r\n      THEN 'Career & Job Hunting'\r\n\r\n      -- Communication\r\n      WHEN app_name IN ('WhatsApp', 'Telegram', 'Discord', 'Teams', 'Zoom', 'Slack')\r\n        OR app_name ILIKE 'Chrome: Outlook%'\r\n        OR app_name ILIKE 'Chrome: Gmail%'\r\n        OR app_name ILIKE 'Chrome: Google Meet%'\r\n        OR app_name ILIKE 'Chrome: Google Drive%'\r\n        OR app_name ILIKE 'Chrome: Google Docs%'\r\n        OR app_name ILIKE 'Chrome: Google Sheets%'\r\n      THEN 'Communication'\r\n\r\n      -- Entertainment\r\n      WHEN app_name ILIKE 'Chrome: YouTube Music%'\r\n        OR app_name ILIKE 'Chrome: YouTube%'\r\n        OR app_name ILIKE 'Chrome: Facebook%'\r\n        OR app_name ILIKE 'Chrome: Instagram%'\r\n        OR app_name ILIKE 'Chrome: TikTok%'\r\n        OR app_name IN ('Spotify', 'Steam', 'League of Legends', 'VLC')\r\n      THEN 'Entertainment'\r\n\r\n      ELSE NULL\r\n    END AS category\r\n  FROM sessions\r\n  WHERE $__timeFilter(started_at)\r\n    AND app_name NOT IN ('Google Chrome', 'Firefox', 'Edge')\r\n)\r\n\r\nSELECT \r\n  category,\r\n  SUM(duration_secs) AS seconds \r\nFROM categorized_stats\r\nWHERE category IS NOT NULL\r\nGROUP BY category\r\nHAVING SUM(duration_secs) > 0\r\nORDER BY seconds ASC;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Categories Breakdown",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "P84324D8F8AB6224B"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "max": 8,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "h"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 15
+      },
+      "id": 5,
+      "options": {
+        "barRadius": 0.1,
+        "barWidth": 0.3,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "vertical",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "time",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "dataset": "productivity_tracker",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "P84324D8F8AB6224B"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  gs::date::timestamptz AS \"time\",\r\n  COALESCE(ROUND(SUM(d.total_secs) / 3600.0, 2), 0) AS \"Hours\"\r\nFROM generate_series(\r\n  (CURRENT_TIMESTAMP AT TIME ZONE 'Egypt')::date - INTERVAL '${lookback_days} days',\r\n  (CURRENT_TIMESTAMP AT TIME ZONE 'Egypt')::date,\r\n  '1 day'\r\n) AS gs\r\nLEFT JOIN daily_stats d\r\n  ON d.stat_date = gs::date\r\n  AND d.app_name NOT LIKE 'Chrome: %'\r\nGROUP BY gs\r\nORDER BY gs ASC;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Daily Screen Time",
+      "type": "barchart"
     }
   ],
-  "cursorSync": "Off",
-  "editable": true,
-  "elements": {
-    "panel-1": {
-      "kind": "Panel",
-      "spec": {
-        "data": {
-          "kind": "QueryGroup",
-          "spec": {
-            "queries": [
-              {
-                "kind": "PanelQuery",
-                "spec": {
-                  "hidden": false,
-                  "query": {
-                    "datasource": {
-                      "name": "P84324D8F8AB6224B"
-                    },
-                    "group": "grafana-postgresql-datasource",
-                    "kind": "DataQuery",
-                    "spec": {
-                      "dataset": "productivity_tracker",
-                      "editorMode": "code",
-                      "format": "table",
-                      "rawQuery": true,
-                      "rawSql": "SELECT\r\n  FLOOR(SUM(duration_secs) / 3600) || 'h ' ||\r\n  FLOOR((SUM(duration_secs) % 3600) / 60) || 'm' AS value\r\nFROM sessions\r\nWHERE $__timeFilter(started_at)\r\nAND app_name = 'Google Chrome'",
-                      "sql": {
-                        "columns": [
-                          {
-                            "parameters": [],
-                            "type": "function"
-                          }
-                        ],
-                        "groupBy": [
-                          {
-                            "property": {
-                              "type": "string"
-                            },
-                            "type": "groupBy"
-                          }
-                        ],
-                        "limit": 50
-                      }
-                    },
-                    "version": "v0"
-                  },
-                  "refId": "A"
-                }
-              }
-            ],
-            "queryOptions": {},
-            "transformations": []
-          }
-        },
-        "description": "",
-        "id": 1,
-        "links": [],
-        "title": "Chrome Hours Today",
-        "vizConfig": {
-          "group": "stat",
-          "kind": "VizConfig",
-          "spec": {
-            "fieldConfig": {
-              "defaults": {
-                "color": {
-                  "mode": "palette-classic"
-                },
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": 0
-                    },
-                    {
-                      "color": "red",
-                      "value": 80
-                    }
-                  ]
-                },
-                "unit": "dtdurations"
-              },
-              "overrides": []
-            },
-            "options": {
-              "colorMode": "value",
-              "graphMode": "area",
-              "justifyMode": "auto",
-              "orientation": "horizontal",
-              "percentChangeColorMode": "standard",
-              "reduceOptions": {
-                "calcs": [],
-                "fields": "/^value$/",
-                "values": true
-              },
-              "showPercentChange": false,
-              "textMode": "value",
-              "wideLayout": true
-            }
-          },
-          "version": "13.0.1"
-        }
-      }
-    },
-    "panel-2": {
-      "kind": "Panel",
-      "spec": {
-        "data": {
-          "kind": "QueryGroup",
-          "spec": {
-            "queries": [
-              {
-                "kind": "PanelQuery",
-                "spec": {
-                  "hidden": false,
-                  "query": {
-                    "datasource": {
-                      "name": "P84324D8F8AB6224B"
-                    },
-                    "group": "grafana-postgresql-datasource",
-                    "kind": "DataQuery",
-                    "spec": {
-                      "dataset": "productivity_tracker",
-                      "editorMode": "code",
-                      "format": "table",
-                      "rawQuery": true,
-                      "rawSql": "SELECT \r\n  app_name, \r\n  SUM(duration_secs) AS duration\r\nFROM sessions\r\nWHERE $__timeFilter(started_at)\r\nAND app_name NOT LIKE 'Chrome: %'\r\nAND app_name NOT IN (\r\n  'Windows Default Lock Screen', 'Search', 'Start', \r\n  'Task Switching', 'UnlockingWindow', 'Task Manager', \r\n  'Volume Control', 'Avast Free Antivirus', 'Action center', \r\n  'Reload site?', 'Network Connections'\r\n)\r\nGROUP BY app_name\r\nORDER BY duration DESC\r\nLIMIT 7;",
-                      "sql": {
-                        "columns": [
-                          {
-                            "parameters": [],
-                            "type": "function"
-                          }
-                        ],
-                        "groupBy": [
-                          {
-                            "property": {
-                              "type": "string"
-                            },
-                            "type": "groupBy"
-                          }
-                        ],
-                        "limit": 50
-                      }
-                    },
-                    "version": "v0"
-                  },
-                  "refId": "A"
-                }
-              }
-            ],
-            "queryOptions": {},
-            "transformations": []
-          }
-        },
-        "description": "",
-        "id": 2,
-        "links": [],
-        "title": "Time Per App",
-        "vizConfig": {
-          "group": "bargauge",
-          "kind": "VizConfig",
-          "spec": {
-            "fieldConfig": {
-              "defaults": {
-                "color": {
-                  "mode": "palette-classic"
-                },
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": 0
-                    },
-                    {
-                      "color": "red",
-                      "value": 80
-                    }
-                  ]
-                },
-                "unit": "dtdurations"
-              },
-              "overrides": []
-            },
-            "options": {
-              "displayMode": "basic",
-              "legend": {
-                "calcs": [],
-                "displayMode": "list",
-                "placement": "bottom",
-                "showLegend": false
-              },
-              "maxVizHeight": 300,
-              "minVizHeight": 14,
-              "minVizWidth": 8,
-              "namePlacement": "auto",
-              "orientation": "horizontal",
-              "reduceOptions": {
-                "calcs": [
-                  "lastNotNull"
-                ],
-                "fields": "",
-                "values": true
-              },
-              "showUnfilled": true,
-              "sizing": "manual",
-              "valueMode": "text"
-            }
-          },
-          "version": "13.0.1"
-        }
-      }
-    },
-    "panel-3": {
-      "kind": "Panel",
-      "spec": {
-        "data": {
-          "kind": "QueryGroup",
-          "spec": {
-            "queries": [
-              {
-                "kind": "PanelQuery",
-                "spec": {
-                  "hidden": false,
-                  "query": {
-                    "datasource": {
-                      "name": "P84324D8F8AB6224B"
-                    },
-                    "group": "grafana-postgresql-datasource",
-                    "kind": "DataQuery",
-                    "spec": {
-                      "dataset": "productivity_tracker",
-                      "editorMode": "code",
-                      "format": "table",
-                      "rawQuery": true,
-                      "rawSql": "SELECT\r\n  CASE\r\n    WHEN app_name ILIKE '%youtube%' THEN 'YouTube'\r\n    ELSE REPLACE(app_name, 'Chrome: ', '')\r\n  END AS site,\r\n  SUM(duration_secs) AS duration\r\nFROM sessions\r\nWHERE $__timeFilter(started_at)\r\nAND app_name LIKE 'Chrome: %'\r\nGROUP BY site\r\nORDER BY duration DESC\r\nLIMIT 7;",
-                      "sql": {
-                        "columns": [
-                          {
-                            "parameters": [],
-                            "type": "function"
-                          }
-                        ],
-                        "groupBy": [
-                          {
-                            "property": {
-                              "type": "string"
-                            },
-                            "type": "groupBy"
-                          }
-                        ],
-                        "limit": 50
-                      }
-                    },
-                    "version": "v0"
-                  },
-                  "refId": "A"
-                }
-              }
-            ],
-            "queryOptions": {},
-            "transformations": []
-          }
-        },
-        "description": "",
-        "id": 3,
-        "links": [],
-        "title": "Top Websites ",
-        "vizConfig": {
-          "group": "bargauge",
-          "kind": "VizConfig",
-          "spec": {
-            "fieldConfig": {
-              "defaults": {
-                "color": {
-                  "mode": "thresholds"
-                },
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": 0
-                    },
-                    {
-                      "color": "red",
-                      "value": 80
-                    }
-                  ]
-                },
-                "unit": "dtdurations"
-              },
-              "overrides": []
-            },
-            "options": {
-              "displayMode": "gradient",
-              "legend": {
-                "calcs": [],
-                "displayMode": "list",
-                "placement": "bottom",
-                "showLegend": false
-              },
-              "maxVizHeight": 300,
-              "minVizHeight": 16,
-              "minVizWidth": 8,
-              "namePlacement": "auto",
-              "orientation": "horizontal",
-              "reduceOptions": {
-                "calcs": [
-                  "lastNotNull"
-                ],
-                "fields": "",
-                "values": true
-              },
-              "showUnfilled": true,
-              "sizing": "auto",
-              "valueMode": "text"
-            }
-          },
-          "version": "13.0.1"
-        }
-      }
-    },
-    "panel-5": {
-      "kind": "Panel",
-      "spec": {
-        "data": {
-          "kind": "QueryGroup",
-          "spec": {
-            "queries": [
-              {
-                "kind": "PanelQuery",
-                "spec": {
-                  "hidden": false,
-                  "query": {
-                    "datasource": {
-                      "name": "P84324D8F8AB6224B"
-                    },
-                    "group": "grafana-postgresql-datasource",
-                    "kind": "DataQuery",
-                    "spec": {
-                      "dataset": "productivity_tracker",
-                      "editorMode": "code",
-                      "format": "time_series",
-                      "rawQuery": true,
-                      "rawSql": "SELECT\r\n  gs::date::timestamptz AS \"time\",\r\n  COALESCE(ROUND(SUM(d.total_secs) / 3600.0, 2), 0) AS \"Hours\"\r\nFROM generate_series(\r\n  (CURRENT_TIMESTAMP AT TIME ZONE 'Egypt')::date - INTERVAL '${lookback_days} days',\r\n  (CURRENT_TIMESTAMP AT TIME ZONE 'Egypt')::date,\r\n  '1 day'\r\n) AS gs\r\nLEFT JOIN daily_stats d\r\n  ON d.stat_date = gs::date\r\n  AND d.app_name NOT LIKE 'Chrome: %'\r\nGROUP BY gs\r\nORDER BY gs ASC;",
-                      "sql": {
-                        "columns": [
-                          {
-                            "parameters": [],
-                            "type": "function"
-                          }
-                        ],
-                        "groupBy": [
-                          {
-                            "property": {
-                              "type": "string"
-                            },
-                            "type": "groupBy"
-                          }
-                        ],
-                        "limit": 50
-                      }
-                    },
-                    "version": "v0"
-                  },
-                  "refId": "A"
-                }
-              }
-            ],
-            "queryOptions": {},
-            "transformations": []
-          }
-        },
-        "description": "",
-        "id": 5,
-        "links": [],
-        "title": "Daily Screen Time",
-        "vizConfig": {
-          "group": "barchart",
-          "kind": "VizConfig",
-          "spec": {
-            "fieldConfig": {
-              "defaults": {
-                "color": {
-                  "mode": "palette-classic"
-                },
-                "custom": {
-                  "axisBorderShow": false,
-                  "axisCenteredZero": false,
-                  "axisColorMode": "text",
-                  "axisLabel": "",
-                  "axisPlacement": "auto",
-                  "fillOpacity": 80,
-                  "gradientMode": "none",
-                  "hideFrom": {
-                    "legend": false,
-                    "tooltip": false,
-                    "viz": false
-                  },
-                  "lineWidth": 1,
-                  "scaleDistribution": {
-                    "type": "linear"
-                  },
-                  "thresholdsStyle": {
-                    "mode": "off"
-                  }
-                },
-                "max": 8,
-                "min": 0,
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": 0
-                    },
-                    {
-                      "color": "red",
-                      "value": 80
-                    }
-                  ]
-                },
-                "unit": "h"
-              },
-              "overrides": []
-            },
-            "options": {
-              "barRadius": 0.1,
-              "barWidth": 0.3,
-              "fullHighlight": false,
-              "groupWidth": 0.7,
-              "legend": {
-                "calcs": [],
-                "displayMode": "list",
-                "placement": "bottom",
-                "showLegend": true
-              },
-              "orientation": "vertical",
-              "showValue": "auto",
-              "stacking": "none",
-              "tooltip": {
-                "hideZeros": false,
-                "mode": "single",
-                "sort": "none"
-              },
-              "xField": "time",
-              "xTickLabelRotation": 0,
-              "xTickLabelSpacing": 0
-            }
-          },
-          "version": "13.0.1"
-        }
-      }
-    },
-    "panel-6": {
-      "kind": "Panel",
-      "spec": {
-        "data": {
-          "kind": "QueryGroup",
-          "spec": {
-            "queries": [
-              {
-                "kind": "PanelQuery",
-                "spec": {
-                  "hidden": false,
-                  "query": {
-                    "datasource": {
-                      "name": "P84324D8F8AB6224B"
-                    },
-                    "group": "grafana-postgresql-datasource",
-                    "kind": "DataQuery",
-                    "spec": {
-                      "dataset": "productivity_tracker",
-                      "editorMode": "code",
-                      "format": "table",
-                      "rawQuery": true,
-                      "rawSql": "WITH categorized_stats AS (\r\n  SELECT\r\n    duration_secs,\r\n    CASE\r\n      -- Deep Work\r\n      WHEN app_name IN ('VS Code', 'Terminal', 'DBeaver', 'Docker', 'PyCharm', 'Cursor')\r\n        OR app_name ILIKE 'Chrome: GitHub%'\r\n        OR app_name ILIKE 'Chrome: AWS%'\r\n        OR app_name ILIKE 'Chrome: Google Cloud%'\r\n        OR app_name ILIKE 'Chrome: Codeforces%'\r\n        OR app_name ILIKE 'Chrome: Stack Overflow%'\r\n        OR app_name ILIKE 'Chrome: Grafana%'\r\n        OR app_name ILIKE 'Chrome: Mermaid%'\r\n        OR app_name ILIKE 'Chrome: Overleaf%'\r\n      THEN 'Deep Work & Coding'\r\n\r\n      -- Learning\r\n      WHEN app_name ILIKE 'Chrome: YouTube (Learning)%'\r\n        OR app_name ILIKE 'Chrome: Udemy%'\r\n        OR app_name ILIKE 'Chrome: Medium%'\r\n        OR app_name ILIKE 'Chrome: NotebookLM%'\r\n        OR app_name ILIKE 'Chrome: Claude%'\r\n        OR app_name ILIKE 'Chrome: ChatGPT%'\r\n        OR app_name ILIKE 'Chrome: Google Gemini%'\r\n        OR app_name ILIKE 'Chrome: Grafana Docs%'\r\n      THEN 'Learning & Research'\r\n\r\n      -- Career\r\n      WHEN app_name ILIKE 'Chrome: LinkedIn%'\r\n        OR app_name ILIKE 'Chrome: Wuzzuf%'\r\n        OR app_name ILIKE 'Chrome: %Jobs%'\r\n      THEN 'Career & Job Hunting'\r\n\r\n      -- Communication\r\n      WHEN app_name IN ('WhatsApp', 'Telegram', 'Discord', 'Teams', 'Zoom', 'Slack')\r\n        OR app_name ILIKE 'Chrome: Outlook%'\r\n        OR app_name ILIKE 'Chrome: Gmail%'\r\n        OR app_name ILIKE 'Chrome: Google Meet%'\r\n        OR app_name ILIKE 'Chrome: Google Drive%'\r\n        OR app_name ILIKE 'Chrome: Google Docs%'\r\n        OR app_name ILIKE 'Chrome: Google Sheets%'\r\n      THEN 'Communication'\r\n\r\n      -- Entertainment\r\n      WHEN app_name ILIKE 'Chrome: YouTube Music%'\r\n        OR app_name ILIKE 'Chrome: YouTube%'\r\n        OR app_name ILIKE 'Chrome: Facebook%'\r\n        OR app_name ILIKE 'Chrome: Instagram%'\r\n        OR app_name ILIKE 'Chrome: TikTok%'\r\n        OR app_name IN ('Spotify', 'Steam', 'League of Legends', 'VLC')\r\n      THEN 'Entertainment'\r\n\r\n      ELSE NULL\r\n    END AS category\r\n  FROM sessions\r\n  WHERE $__timeFilter(started_at)\r\n    AND app_name NOT IN ('Google Chrome', 'Firefox', 'Edge')\r\n)\r\n\r\nSELECT \r\n  category,\r\n  SUM(duration_secs) AS seconds \r\nFROM categorized_stats\r\nWHERE category IS NOT NULL\r\nGROUP BY category\r\nHAVING SUM(duration_secs) > 0\r\nORDER BY seconds ASC;",
-                      "sql": {
-                        "columns": [
-                          {
-                            "parameters": [],
-                            "type": "function"
-                          }
-                        ],
-                        "groupBy": [
-                          {
-                            "property": {
-                              "type": "string"
-                            },
-                            "type": "groupBy"
-                          }
-                        ],
-                        "limit": 50
-                      }
-                    },
-                    "version": "v0"
-                  },
-                  "refId": "A"
-                }
-              }
-            ],
-            "queryOptions": {},
-            "transformations": []
-          }
-        },
-        "description": "",
-        "id": 6,
-        "links": [],
-        "title": "Categories Breakdown",
-        "vizConfig": {
-          "group": "piechart",
-          "kind": "VizConfig",
-          "spec": {
-            "fieldConfig": {
-              "defaults": {
-                "color": {
-                  "mode": "palette-classic"
-                },
-                "custom": {
-                  "hideFrom": {
-                    "legend": false,
-                    "tooltip": false,
-                    "viz": false
-                  }
-                },
-                "decimals": 1,
-                "fieldMinMax": false,
-                "unit": "dtdurations"
-              },
-              "overrides": []
-            },
-            "options": {
-              "displayLabels": [],
-              "legend": {
-                "displayMode": "list",
-                "placement": "bottom",
-                "showLegend": true
-              },
-              "pieType": "donut",
-              "reduceOptions": {
-                "calcs": [
-                  "lastNotNull"
-                ],
-                "fields": "/^seconds$/",
-                "values": true
-              },
-              "sort": "asc",
-              "tooltip": {
-                "hideZeros": false,
-                "mode": "multi",
-                "sort": "none"
-              }
-            }
-          },
-          "version": "13.0.1"
-        }
-      }
-    }
-  },
-  "layout": {
-    "kind": "GridLayout",
-    "spec": {
-      "items": [
-        {
-          "kind": "GridLayoutItem",
-          "spec": {
-            "element": {
-              "kind": "ElementReference",
-              "name": "panel-1"
-            },
-            "height": 7,
-            "width": 9,
-            "x": 0,
-            "y": 0
-          }
-        },
-        {
-          "kind": "GridLayoutItem",
-          "spec": {
-            "element": {
-              "kind": "ElementReference",
-              "name": "panel-2"
-            },
-            "height": 7,
-            "width": 15,
-            "x": 9,
-            "y": 0
-          }
-        },
-        {
-          "kind": "GridLayoutItem",
-          "spec": {
-            "element": {
-              "kind": "ElementReference",
-              "name": "panel-3"
-            },
-            "height": 8,
-            "width": 12,
-            "x": 0,
-            "y": 7
-          }
-        },
-        {
-          "kind": "GridLayoutItem",
-          "spec": {
-            "element": {
-              "kind": "ElementReference",
-              "name": "panel-6"
-            },
-            "height": 16,
-            "width": 12,
-            "x": 12,
-            "y": 7
-          }
-        },
-        {
-          "kind": "GridLayoutItem",
-          "spec": {
-            "element": {
-              "kind": "ElementReference",
-              "name": "panel-5"
-            },
-            "height": 8,
-            "width": 12,
-            "x": 0,
-            "y": 15
-          }
-        }
-      ]
-    }
-  },
-  "links": [],
-  "liveNow": false,
-  "preferences": {
-    "layout": {
-      "kind": "GridLayout",
-      "spec": {
-        "items": []
-      }
-    }
-  },
   "preload": false,
-  "tags": [],
-  "timeSettings": {
-    "autoRefresh": "",
-    "autoRefreshIntervals": [
+  "refresh": "",
+  "schemaVersion": 42,
+  "templating": {
+    "list": [
+      {
+        "allowCustomValue": true,
+        "current": {
+          "text": "7",
+          "value": "7"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "lookback_days",
+        "options": [],
+        "query": "7, 14, 30, 60, 90",
+        "skipUrlSync": false,
+        "type": "custom",
+        "valuesFormat": "csv"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-2d",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
       "5s",
       "10s",
       "30s",
@@ -678,32 +526,11 @@
       "1h",
       "2h",
       "1d"
-    ],
-    "fiscalYearStartMonth": 0,
-    "from": "now-2d",
-    "hideTimepicker": false,
-    "timezone": "browser",
-    "to": "now"
+    ]
   },
-  "title": "My Laptop Application Tracker Final FR",
-  "variables": [
-    {
-      "kind": "CustomVariable",
-      "spec": {
-        "allowCustomValue": true,
-        "current": {
-          "text": "7",
-          "value": "7"
-        },
-        "hide": "dontHide",
-        "includeAll": false,
-        "multi": false,
-        "name": "lookback_days",
-        "options": [],
-        "query": "7, 14, 30, 60, 90",
-        "skipUrlSync": false,
-        "valuesFormat": "csv"
-      }
-    }
-  ]
+  "timezone": "browser",
+  "title": "My Laptop Application Tracker Final22",
+  "version": 10,
+  "uid": "ad9sfgn",
+  "id": 3248843389263872
 }
