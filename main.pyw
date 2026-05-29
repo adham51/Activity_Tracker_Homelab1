@@ -5,7 +5,14 @@ import signal        # Lets us detect OS signals (like when you press Ctrl+C to 
 import sys           # Lets us force the Python script to shut down cleanly
 import os            # Lets us read Environment Variables (system-wide hidden settings)
 
-from datetime import datetime    # Lets us get the exact current time and date
+# AWS
+import requests
+import boto3
+from botocore.exceptions import ClientError
+
+from datetime import datetime, timezone
+import zoneinfo
+CAIRO_TZ = zoneinfo.ZoneInfo("Africa/Cairo")
 from typing import Optional      # Helps with code auto-complete, says a value might be 'None'
 from urllib.parse import urlparse  # A tool to chop up a URL and extract just the domain name (e.g., github.com)
 import re
@@ -206,6 +213,69 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 
+# AWS SG/IP CHECK FUNCTION
+def ensure_aws_access():
+    """Updates EXISTING Security Group rules with the new dynamic IP."""
+    sg_id = os.getenv("AWS_SG_ID")
+    if not sg_id:
+        return
+
+    try:
+        # 1. Get current public IP
+        my_ip = requests.get('https://api.ipify.org').text + '/32'
+        
+        # 2. Connect to AWS EC2
+        ec2 = boto3.client('ec2', region_name=os.getenv("AWS_REGION", "eu-central-1"))
+        
+        # 3. Define the exact rules to update using your AWS Rule IDs
+        rules_to_update = [
+            {
+                'SecurityGroupRuleId': 'sgr-0055c4fb6016063e5', # SSH
+                'SecurityGroupRule': {
+                    'IpProtocol': 'tcp',
+                    'FromPort': 22,
+                    'ToPort': 22,
+                    'CidrIpv4': my_ip,
+                    'Description': 'Auto-updated SSH'
+                }
+            },
+            {
+                'SecurityGroupRuleId': 'sgr-0e8860add822ebf80', # PostgreSQL
+                'SecurityGroupRule': {
+                    'IpProtocol': 'tcp',
+                    'FromPort': 5432,
+                    'ToPort': 5432,
+                    'CidrIpv4': my_ip,
+                    'Description': 'Auto-updated POSTGRESQL DB'
+                }
+            },
+            {
+                'SecurityGroupRuleId': 'sgr-08b4e67e6487ab3f0', # Custom TCP
+                'SecurityGroupRule': {
+                    'IpProtocol': 'tcp',
+                    # NOTE: Update these ports to match whatever this rule is actually for!
+                    # For example, if this is Grafana, change 3000 to 3000. 
+                    # If it is Portainer, change to 9000.
+                    'FromPort': 3000, 
+                    'ToPort': 3000,   
+                    'CidrIpv4': my_ip,
+                    'Description': 'Auto-updated GRAFANA'
+                }
+            }
+        ]
+        
+        # 4. Push the update to AWS
+        ec2.modify_security_group_rules(
+            GroupId=sg_id,
+            SecurityGroupRules=rules_to_update
+        )
+        log.info(f"AWS SG successfully modified. Rules updated to IP: {my_ip}")
+        
+    except ClientError as e:
+        log.error(f"Failed to update AWS Security Group: {e}")
+    except Exception as e:
+        log.error(f"Could not check or update IP: {e}")
+        
 # ── Database schema ───────────────────────────────────────────────────────────
 
 # This is raw SQL language saved as a giant multi-line Python string.
@@ -281,7 +351,7 @@ def close_session(conn, app: str, title: Optional[str], started_at: datetime, en
             (ended_at, app, started_at),
         )
 
-    # Task 2: Calculate all the time spent in this app today, and update the summary table.
+   # Task 2: Calculate all the time spent in this app today, and update the summary table.
     with conn.cursor() as cur: 
         cur.execute(
             """
@@ -289,16 +359,16 @@ def close_session(conn, app: str, title: Optional[str], started_at: datetime, en
 
             -- This SELECT grabs all completed sessions for this app today and sums them up
             SELECT
-                DATE(started_at),
+                DATE(started_at AT TIME ZONE 'Africa/Cairo'),
                 app_name,
                 SUM(duration_secs),
                 COUNT(*),
                 NOW()
             FROM sessions
             WHERE app_name        = %s
-              AND DATE(started_at) = %s
+              AND DATE(started_at AT TIME ZONE 'Africa/Cairo') = %s
               AND ended_at IS NOT NULL
-            GROUP BY DATE(started_at), app_name
+            GROUP BY DATE(started_at AT TIME ZONE 'Africa/Cairo'), app_name
 
             -- If this app already has a summary row for today, just update it instead of making a new one.
             ON CONFLICT (stat_date, app_name) DO UPDATE
@@ -308,7 +378,6 @@ def close_session(conn, app: str, title: Optional[str], started_at: datetime, en
             """,
             (app, started_at.date()),
         )
-
 
 
 # ── Window detection functions ────────────────────────────────────────────────
@@ -518,6 +587,10 @@ def run():
     # Must be the very first thing we do — before any DB connection or logging.
     # If another instance is running, this call will exit immediately.
     acquire_lock()
+    
+    # ── NEW: Ensure AWS allows our IP before connecting ─────────────────────
+    log.info("Checking AWS Security Group IP rules...")
+    ensure_aws_access()
 
     log.info("Connecting to PostgreSQL...")
     conn = psycopg2.connect(**DB_CONFIG)
@@ -536,9 +609,9 @@ def run():
         log.info("Shutting down tracker...")
 
         if current_app and session_start:
-            close_session(conn, current_app, current_title, session_start, datetime.utcnow())
+            close_session(conn, current_app, current_title, session_start, datetime.now(CAIRO_TZ))
             if current_app.startswith("Chrome: "):
-                close_session(conn, "Google Chrome", current_title, session_start, datetime.utcnow())
+                close_session(conn, "Google Chrome", current_title, session_start, datetime.now(CAIRO_TZ))
 
         conn.close()
 
@@ -571,7 +644,7 @@ def run():
         # ─────────────────────────────────────────────────────────────────────
 
         app, title = get_active_window()
-        now = datetime.utcnow()
+        now = datetime.now(CAIRO_TZ)
 
         switched = (app != current_app or title != current_title)
 

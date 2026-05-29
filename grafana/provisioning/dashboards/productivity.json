@@ -45,7 +45,7 @@
                       "editorMode": "code",
                       "format": "table",
                       "rawQuery": true,
-                      "rawSql": "SELECT\r\n  FLOOR(SUM(total_secs) / 3600) || 'h ' ||\r\n  FLOOR((SUM(total_secs) % 3600) / 60) || 'm' AS value\r\nFROM daily_stats\r\nWHERE $__timeFilter(stat_date)\r\nAND app_name = 'Google Chrome'",
+                      "rawSql": "SELECT\r\n  FLOOR(SUM(duration_secs) / 3600) || 'h ' ||\r\n  FLOOR((SUM(duration_secs) % 3600) / 60) || 'm' AS value\r\nFROM sessions\r\nWHERE $__timeFilter(started_at)\r\nAND app_name = 'Google Chrome'",
                       "sql": {
                         "columns": [
                           {
@@ -146,7 +146,7 @@
                       "editorMode": "code",
                       "format": "table",
                       "rawQuery": true,
-                      "rawSql": "SELECT app_name, SUM(total_secs) AS duration\r\nFROM daily_stats\r\nWHERE $__timeFilter(stat_date)\r\nAND app_name NOT LIKE 'Chrome: %'\r\nAND app_name NOT IN (\r\n  'Windows Default Lock Screen','Search','Start',\r\n  'Task Switching','UnlockingWindow','Task Manager', \r\n  'Volume Control','Avast Free Antivirus','Action center', \r\n  'Reload site?', 'Network Connections', 'Could Not Start the Application'\r\n)\r\nGROUP BY app_name\r\nORDER BY duration DESC\r\nLIMIT 7;",
+                      "rawSql": "SELECT \r\n  app_name, \r\n  SUM(duration_secs) AS duration\r\nFROM sessions\r\nWHERE $__timeFilter(started_at)\r\nAND app_name NOT LIKE 'Chrome: %'\r\nAND app_name NOT IN (\r\n  'Windows Default Lock Screen', 'Search', 'Start', \r\n  'Task Switching', 'UnlockingWindow', 'Task Manager', \r\n  'Volume Control', 'Avast Free Antivirus', 'Action center', \r\n  'Reload site?', 'Network Connections'\r\n)\r\nGROUP BY app_name\r\nORDER BY duration DESC\r\nLIMIT 7;",
                       "sql": {
                         "columns": [
                           {
@@ -256,7 +256,7 @@
                       "editorMode": "code",
                       "format": "table",
                       "rawQuery": true,
-                      "rawSql": "SELECT\r\n  CASE\r\n    WHEN app_name ILIKE '%youtube%' THEN 'YouTube'\r\n    ELSE REPLACE(app_name, 'Chrome: ', '')\r\n  END AS site,\r\n  SUM(total_secs) AS duration\r\nFROM daily_stats\r\nWHERE $__timeFilter(stat_date)\r\nAND app_name LIKE 'Chrome: %'\r\nGROUP BY 1\r\nORDER BY duration DESC\r\nLIMIT 7;",
+                      "rawSql": "SELECT\r\n  CASE\r\n    WHEN app_name ILIKE '%youtube%' THEN 'YouTube'\r\n    ELSE REPLACE(app_name, 'Chrome: ', '')\r\n  END AS site,\r\n  SUM(duration_secs) AS duration\r\nFROM sessions\r\nWHERE $__timeFilter(started_at)\r\nAND app_name LIKE 'Chrome: %'\r\nGROUP BY site\r\nORDER BY duration DESC\r\nLIMIT 7;",
                       "sql": {
                         "columns": [
                           {
@@ -366,7 +366,7 @@
                       "editorMode": "code",
                       "format": "time_series",
                       "rawQuery": true,
-                      "rawSql": "SELECT\r\n  gs::date::timestamptz AS \"time\",\r\n  COALESCE(ROUND(SUM(d.total_secs) / 3600.0, 2), 0) AS \"Hours\"\r\nFROM generate_series(\r\n  date_trunc('day', NOW()) - INTERVAL '6 days',\r\n  date_trunc('day', NOW()),\r\n  '1 day'\r\n) AS gs\r\nLEFT JOIN daily_stats d\r\n  ON d.stat_date = gs::date\r\n  AND d.app_name NOT LIKE 'Chrome: %'\r\nGROUP BY gs\r\nORDER BY gs ASC;",
+                      "rawSql": "SELECT\r\n  gs::date::timestamptz AS \"time\",\r\n  COALESCE(ROUND(SUM(d.total_secs) / 3600.0, 2), 0) AS \"Hours\"\r\nFROM generate_series(\r\n  (CURRENT_TIMESTAMP AT TIME ZONE 'Egypt')::date - INTERVAL '${lookback_days} days',\r\n  (CURRENT_TIMESTAMP AT TIME ZONE 'Egypt')::date,\r\n  '1 day'\r\n) AS gs\r\nLEFT JOIN daily_stats d\r\n  ON d.stat_date = gs::date\r\n  AND d.app_name NOT LIKE 'Chrome: %'\r\nGROUP BY gs\r\nORDER BY gs ASC;",
                       "sql": {
                         "columns": [
                           {
@@ -498,7 +498,7 @@
                       "editorMode": "code",
                       "format": "table",
                       "rawQuery": true,
-                      "rawSql": "WITH categorized_stats AS (\r\n  SELECT\r\n    total_secs,\r\n    CASE\r\n      -- Deep Work\r\n      WHEN app_name IN ('VS Code', 'Terminal', 'DBeaver', 'Docker', 'PyCharm', 'Cursor')\r\n        OR app_name ILIKE 'Chrome: GitHub%'\r\n        OR app_name ILIKE 'Chrome: AWS%'\r\n        OR app_name ILIKE 'Chrome: Google Cloud%'\r\n        OR app_name ILIKE 'Chrome: Codeforces%'\r\n        OR app_name ILIKE 'Chrome: Stack Overflow%'\r\n        OR app_name ILIKE 'Chrome: Grafana%'\r\n        OR app_name ILIKE 'Chrome: Mermaid%'\r\n        OR app_name ILIKE 'Chrome: Overleaf%'\r\n      THEN 'Deep Work & Coding'\r\n\r\n      -- Learning\r\n      WHEN app_name ILIKE 'Chrome: YouTube (Learning)%'\r\n        OR app_name ILIKE 'Chrome: Udemy%'\r\n        OR app_name ILIKE 'Chrome: Medium%'\r\n        OR app_name ILIKE 'Chrome: NotebookLM%'\r\n        OR app_name ILIKE 'Chrome: Claude%'\r\n        OR app_name ILIKE 'Chrome: ChatGPT%'\r\n        OR app_name ILIKE 'Chrome: Google Gemini%'\r\n        OR app_name ILIKE 'Chrome: Grafana Docs%'\r\n      THEN 'Learning & Research'\r\n\r\n      -- Career\r\n      WHEN app_name ILIKE 'Chrome: LinkedIn%'\r\n        OR app_name ILIKE 'Chrome: Wuzzuf%'\r\n        OR app_name ILIKE 'Chrome: %Jobs%'\r\n      THEN 'Career & Job Hunting'\r\n\r\n      -- Communication\r\n      WHEN app_name IN ('WhatsApp', 'Telegram', 'Discord', 'Teams', 'Zoom', 'Slack')\r\n        OR app_name ILIKE 'Chrome: Outlook%'\r\n        OR app_name ILIKE 'Chrome: Gmail%'\r\n        OR app_name ILIKE 'Chrome: Google Meet%'\r\n        OR app_name ILIKE 'Chrome: Google Drive%'\r\n        OR app_name ILIKE 'Chrome: Google Docs%'\r\n        OR app_name ILIKE 'Chrome: Google Sheets%'\r\n      THEN 'Communication'\r\n\r\n      -- Entertainment\r\n      WHEN app_name ILIKE 'Chrome: YouTube Music%'\r\n        OR app_name ILIKE 'Chrome: YouTube%'\r\n        OR app_name ILIKE 'Chrome: Facebook%'\r\n        OR app_name ILIKE 'Chrome: Instagram%'\r\n        OR app_name ILIKE 'Chrome: TikTok%'\r\n        OR app_name IN ('Spotify', 'Steam', 'League of Legends', 'VLC')\r\n      THEN 'Entertainment'\r\n\r\n      ELSE NULL\r\n    END AS category\r\n  FROM daily_stats\r\n  WHERE $__timeFilter(stat_date)\r\n    AND app_name NOT IN ('Google Chrome', 'Firefox', 'Edge')\r\n)\r\n\r\nSELECT \r\n  category,\r\n  SUM(total_secs) AS seconds  -- Keep raw seconds here for Grafana math\r\nFROM categorized_stats\r\nWHERE category IS NOT NULL\r\nGROUP BY category\r\nHAVING SUM(total_secs) > 0\r\nORDER BY seconds ASC;",
+                      "rawSql": "WITH categorized_stats AS (\r\n  SELECT\r\n    duration_secs,\r\n    CASE\r\n      -- Deep Work\r\n      WHEN app_name IN ('VS Code', 'Terminal', 'DBeaver', 'Docker', 'PyCharm', 'Cursor')\r\n        OR app_name ILIKE 'Chrome: GitHub%'\r\n        OR app_name ILIKE 'Chrome: AWS%'\r\n        OR app_name ILIKE 'Chrome: Google Cloud%'\r\n        OR app_name ILIKE 'Chrome: Codeforces%'\r\n        OR app_name ILIKE 'Chrome: Stack Overflow%'\r\n        OR app_name ILIKE 'Chrome: Grafana%'\r\n        OR app_name ILIKE 'Chrome: Mermaid%'\r\n        OR app_name ILIKE 'Chrome: Overleaf%'\r\n      THEN 'Deep Work & Coding'\r\n\r\n      -- Learning\r\n      WHEN app_name ILIKE 'Chrome: YouTube (Learning)%'\r\n        OR app_name ILIKE 'Chrome: Udemy%'\r\n        OR app_name ILIKE 'Chrome: Medium%'\r\n        OR app_name ILIKE 'Chrome: NotebookLM%'\r\n        OR app_name ILIKE 'Chrome: Claude%'\r\n        OR app_name ILIKE 'Chrome: ChatGPT%'\r\n        OR app_name ILIKE 'Chrome: Google Gemini%'\r\n        OR app_name ILIKE 'Chrome: Grafana Docs%'\r\n      THEN 'Learning & Research'\r\n\r\n      -- Career\r\n      WHEN app_name ILIKE 'Chrome: LinkedIn%'\r\n        OR app_name ILIKE 'Chrome: Wuzzuf%'\r\n        OR app_name ILIKE 'Chrome: %Jobs%'\r\n      THEN 'Career & Job Hunting'\r\n\r\n      -- Communication\r\n      WHEN app_name IN ('WhatsApp', 'Telegram', 'Discord', 'Teams', 'Zoom', 'Slack')\r\n        OR app_name ILIKE 'Chrome: Outlook%'\r\n        OR app_name ILIKE 'Chrome: Gmail%'\r\n        OR app_name ILIKE 'Chrome: Google Meet%'\r\n        OR app_name ILIKE 'Chrome: Google Drive%'\r\n        OR app_name ILIKE 'Chrome: Google Docs%'\r\n        OR app_name ILIKE 'Chrome: Google Sheets%'\r\n      THEN 'Communication'\r\n\r\n      -- Entertainment\r\n      WHEN app_name ILIKE 'Chrome: YouTube Music%'\r\n        OR app_name ILIKE 'Chrome: YouTube%'\r\n        OR app_name ILIKE 'Chrome: Facebook%'\r\n        OR app_name ILIKE 'Chrome: Instagram%'\r\n        OR app_name ILIKE 'Chrome: TikTok%'\r\n        OR app_name IN ('Spotify', 'Steam', 'League of Legends', 'VLC')\r\n      THEN 'Entertainment'\r\n\r\n      ELSE NULL\r\n    END AS category\r\n  FROM sessions\r\n  WHERE $__timeFilter(started_at)\r\n    AND app_name NOT IN ('Google Chrome', 'Firefox', 'Edge')\r\n)\r\n\r\nSELECT \r\n  category,\r\n  SUM(duration_secs) AS seconds \r\nFROM categorized_stats\r\nWHERE category IS NOT NULL\r\nGROUP BY category\r\nHAVING SUM(duration_secs) > 0\r\nORDER BY seconds ASC;",
                       "sql": {
                         "columns": [
                           {
@@ -680,11 +680,30 @@
       "1d"
     ],
     "fiscalYearStartMonth": 0,
-    "from": "now-24h",
+    "from": "now-2d",
     "hideTimepicker": false,
     "timezone": "browser",
     "to": "now"
   },
-  "title": "My Laptop Application Tracker",
-  "variables": []
+  "title": "My Laptop Application Tracker Final22",
+  "variables": [
+    {
+      "kind": "CustomVariable",
+      "spec": {
+        "allowCustomValue": true,
+        "current": {
+          "text": "7",
+          "value": "7"
+        },
+        "hide": "dontHide",
+        "includeAll": false,
+        "multi": false,
+        "name": "lookback_days",
+        "options": [],
+        "query": "7, 14, 30, 60, 90",
+        "skipUrlSync": false,
+        "valuesFormat": "csv"
+      }
+    }
+  ]
 }
