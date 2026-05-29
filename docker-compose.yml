@@ -49,8 +49,7 @@ services:
       # This folder is how you "pre-configure" Grafana without clicking through the UI
       # Grafana reads YAML files from here on startup and auto-creates data sources + dashboards
       # We'll create this folder structure on your machine in a moment
-      # - /home/ubuntu/homelab/Activity_Tracker_Homelab1/grafana/provisioning:/etc/grafana/provisioning
-      - ./grafana/provisioning:/etc/grafana/provisioning
+      - /home/ubuntu/homelab/Activity_Tracker_Homelab1/grafana/provisioning:/etc/grafana/provisioning
     ports:
       - "3000:3000"   # access Grafana at http://localhost:3000 in your browser
 
