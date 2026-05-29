@@ -6,6 +6,7 @@ providers:
     folder: ''
     type: file
     disableDeletion: false
+    allowUiUpdates: true
     updateIntervalSeconds: 10
     options:
       # This is the path INSIDE the Docker container where Grafana will look
